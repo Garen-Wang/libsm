@@ -6,7 +6,7 @@ use simplelog::*;
 
 fn test1() {
     let klens = [1, 2, 4, 8, 16, 32, 64];
-    let n = 10;
+    let n = 100;
     for klen in klens {
         let mut total_enc = Duration::new(0, 0);
         let mut total_dec = Duration::new(0, 0);

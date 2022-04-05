@@ -25,7 +25,7 @@ pub struct EccCtx {
     n: BigUint,
 }
 
-#[derive(Clone, PartialEq, Eq, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct Point {
     pub x: FieldElem,
     pub y: FieldElem,
@@ -651,6 +651,17 @@ impl fmt::Display for Point {
         }
     }
 }
+
+impl PartialEq for Point {
+    fn eq(&self, other: &Self) -> bool {
+        let curve = EccCtx::new();
+        let (lx, ly) = curve.to_affine(self);
+        let (rx, ry) = curve.to_affine(other);
+        lx == rx && ly == ry
+        // self.x == other.x && self.y == other.y && self.z == other.z
+    }
+}
+
 
 #[cfg(test)]
 mod tests {

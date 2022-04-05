@@ -174,4 +174,58 @@ mod tests {
         assert_eq!(msg, plain);
         // println!("plain: {}", std::str::from_utf8(&plain).unwrap());
     }
+
+    #[test]
+    fn ecc_encrypt_test() {
+        // let curve = EccCtx::new();
+        // let g_point = curve.generator();
+        // // let (x_g, y_g) = curve.to_affine(&generator);
+        // let k = curve.random_uint(); // private key of Alice
+        // let k_point = curve.mul(&k, &g_point);
+        // let m_point = curve.generator();
+        // let r = curve.random_uint();
+        // let c_1_point = curve.add(&m_point, &curve.mul(&r, &k_point));
+        // let c_2_point = curve.mul(&r, &g_point);
+
+        // let new_m_point = curve.add(&c_1_point, &curve.neg(&curve.mul(&k, &c_2_point)));
+        // assert_eq!(m_point, new_m_point);
+        let curve = EccCtx::new();
+        let private_key = curve.random_uint();
+        let public_key = curve.g_mul(&private_key);
+
+        let cipher_private_key = curve.random_uint();
+        let cipher_public_key = curve.g_mul(&cipher_private_key);
+        let encrypted_key = curve.mul(&cipher_private_key, &public_key);
+
+        let decrypted_key = curve.mul(&private_key, &cipher_public_key);
+        assert_eq!(encrypted_key, decrypted_key);
+
+        // let (ex, ey) = curve.to_affine(&encrypted_key);
+        // let (dx, dy) = curve.to_affine(&decrypted_key);
+        // println!("{}, {}", ex.to_biguint(), ey.to_biguint());
+        // println!("{}, {}", dx.to_biguint(), dy.to_biguint());
+    }
+
+    #[test]
+    fn ecc_encrypt_test2() {
+        let curve = EccCtx::new();
+        let g_point = curve.generator();
+        // let (x_g, y_g) = curve.to_affine(&generator);
+        let k = curve.random_uint(); // private key of Alice
+        let k_point = curve.mul(&k, &g_point);
+        let m_point = curve.generator();
+
+        let r = curve.random_uint();
+        let c_1_point = curve.add(&m_point, &curve.mul(&r, &k_point));
+        let c_2_point = curve.mul(&r, &g_point);
+
+        let new_m_point = curve.add(&c_1_point, &curve.neg(&curve.mul(&k, &c_2_point)));
+
+        assert_eq!(m_point, new_m_point);
+
+        // let (ex, ey) = curve.to_affine(&m_point);
+        // let (dx, dy) = curve.to_affine(&new_m_point);
+        // println!("{}, {}", ex.to_biguint(), ey.to_biguint());
+        // println!("{}, {}", dx.to_biguint(), dy.to_biguint());
+    }
 }
