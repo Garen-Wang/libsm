@@ -1,7 +1,10 @@
+use std::{time::{Duration, Instant}, fs};
+
 use num_bigint::BigUint;
 use num_traits::One;
+use rand::RngCore;
 
-use crate::{sm2::util::kdf, sm3::hash::Sm3Hash};
+use crate::{sm2::{util::kdf, signature::SigCtx}, sm3::hash::Sm3Hash};
 
 use super::ecc::{EccCtx, Point};
 
@@ -118,6 +121,35 @@ impl DecryptCtx {
     }
 }
 
+pub fn sm2_encrypt_decrypt_test(klen: usize) -> (Duration, Duration) {
+    let mut msg = vec![0u8; klen];
+    rand::thread_rng().fill_bytes(&mut msg);
+    // println!("msg: {}", std::str::from_utf8(&msg).unwrap());
+    let klen = msg.len();
+    let ctx = SigCtx::new();
+    let pk_b = ctx.load_pubkey(&fs::read("/home/garen/bpublickey.pem").unwrap()).expect("bad public key");
+    let sk_b = ctx.load_seckey(&fs::read("/home/garen/bprivatekey.pem").unwrap()).expect("bad private key");
+
+    let encrypt_now = Instant::now();
+    let encrypt_ctx = EncryptCtx::new(klen, pk_b);
+    let cipher = encrypt_ctx.encrypt(&msg);
+    let encrypt_elapsed = encrypt_now.elapsed();
+    // println!("cipher: {:x?}", cipher);
+
+    let decrypt_now = Instant::now();
+    let decrypt_ctx = DecryptCtx::new(klen, sk_b);
+    let plain = decrypt_ctx.decrypt(&cipher);
+    let decrypt_elapsed = decrypt_now.elapsed();
+    assert_eq!(msg, plain);
+    // println!("plain: {}", std::str::from_utf8(&plain).unwrap());
+    (encrypt_elapsed, decrypt_elapsed)
+}
+
+pub fn sm2_generate_keypair_test() -> Duration {
+    let now = Instant::now();
+    let (_pk, _sk) = SigCtx::new().new_keypair();
+    now.elapsed()
+}
 
 #[cfg(test)]
 mod tests {
